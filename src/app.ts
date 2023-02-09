@@ -80,7 +80,7 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
         const importedNode = document.importNode(this.elementTemplate.content, true);
         this.element = importedNode.firstElementChild as U;
         if (idElement) {
-            this.element.classList.add(idElement)
+            this.element.id = idElement;
         }
         this.render(insertAtStart)
     }
@@ -119,15 +119,39 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement>{
 
     renderContent() {
         this.element.querySelector('h2')!.textContent = `${this.type} projects`.toUpperCase();
+        this.element.querySelector('ul')!.id = `projects-${this.type}-list`;
     }
 
     renderProjects() {
-        const elementList = document.querySelector(`.projects--${this.type} ul`)!;
-        const elementListItem = document.createElement('li')
+        const listElement = document.getElementById(`projects-${this.type}-list`)!;
+        listElement.innerHTML = '';
+
         for (const project of this.projects) {
-            elementListItem.textContent = project.title;
-            elementList.appendChild(elementListItem);
+            new ProjectListItem(this.element.querySelector('ul')!.id, project)
         }
+    }
+}
+
+class ProjectListItem extends Component<HTMLUListElement, HTMLLIElement> {
+    private project: Project;
+
+    constructor(idHost: string, project: Project) {
+        super('single-project', idHost, false, project.id);
+
+        this.project = project;
+
+        this.configure();
+        this.renderContent();
+    }
+
+    configure() {
+        console.log(this.element)
+
+    }
+    renderContent() {
+        this.element.querySelector('h2')!.textContent = this.project.title;
+        this.element.querySelector('h3')!.textContent = this.project.description;
+        this.element.querySelector('p')!.textContent = this.project.people.toString();
     }
 }
 
