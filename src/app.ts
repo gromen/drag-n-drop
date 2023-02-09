@@ -7,6 +7,43 @@ interface Validatable {
     max?: number;
 }
 
+
+
+class ProjectList {
+    elementTemplate: HTMLTemplateElement;
+    elementHost: HTMLDivElement;
+    element: HTMLElement;
+    projects: any[];
+    private static projects: any[];
+
+    constructor(private type: 'active' | 'finished') {
+        this.elementTemplate = document.getElementById('project-list') as HTMLTemplateElement;
+        this.elementHost = document.getElementById('app')! as HTMLDivElement;
+        const importedNode = document.importNode(this.elementTemplate.content, true);
+        this.element = importedNode.firstElementChild as HTMLElement;
+
+        this.projects = [] as any[];
+
+        this.render();
+        this.renderContent();
+    }
+
+    static addProject(project: any) {
+        this.projects.push(project)
+        console.log(this.projects   )
+    }
+
+    private renderContent() {
+        this.element.classList.add(`projects--${this.type}`);
+        this.element.querySelector('h2')!.textContent = `${this.type} projects`.toUpperCase();
+
+    }
+
+    private render() {
+        this.elementHost.insertAdjacentElement('beforeend', this.element)
+    }
+}
+
 function AutoBind(_: any, _2: string | Symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value
     return {
@@ -77,7 +114,7 @@ class ProjectInput {
         const people: Validatable = {
             value: +valuePeople,
             required: true,
-            min: 2
+            min: 0
         }
 
         if (
@@ -95,8 +132,10 @@ class ProjectInput {
     private submitHandler(event: Event) {
         event.preventDefault();
         const payload = this.userInputPayload()
+
         if (Array.isArray(payload)) {
-            console.log(payload)
+            const [ title, description, people ] = payload;
+            // projectState.addProject(title, description, people)
             this.elementForm.reset()
         }
     }
@@ -111,6 +150,8 @@ class ProjectInput {
 
 }
 
-const projectInput = new ProjectInput()
+new ProjectInput()
+new ProjectList('active')
+new ProjectList('finished')
 
 
