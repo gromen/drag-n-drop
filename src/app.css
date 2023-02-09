@@ -119,7 +119,7 @@ button:active {
   background: #d6e1ff;
 }
 
-#user-input {
+.user-input {
   margin: 1rem;
   padding: 1rem;
   border: 1px solid #ff0062;
