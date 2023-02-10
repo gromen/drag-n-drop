@@ -1,3 +1,14 @@
+interface Draggable {
+    handlerDragStart(event: DragEvent): void;
+    handlerDragEnd(event: DragEvent): void;
+}
+
+interface Droppable {
+    handlerDragOver(event: DragEvent): void
+    handlerDragLeave(event: DragEvent): void
+    handlerDropZone(event: DragEvent): void
+}
+
 interface Validatable {
     value: string | number;
     required?: boolean;
@@ -56,8 +67,20 @@ class ProjectState extends State<Project>{
         );
 
         this.projects.push(newProject)
+        this.updateListeners();
+    }
+
+    updateListeners() {
         for (const listenerFn of this.listeners) {
             listenerFn([...this.projects])
+        }
+    }
+
+    moveProject(idProject: string, statusNew: ProjectStatus) {
+        const project = this.projects.find(project => project.id === idProject);
+        if (project && project.status !== statusNew) {
+            project.status = statusNew
+            this.updateListeners();
         }
     }
 }
@@ -93,17 +116,47 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     abstract renderContent(): void;
 }
 
-class ProjectList extends Component<HTMLDivElement, HTMLElement>{
+class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Droppable {
     projects: Project[] = [];
 
+
     constructor(private type: 'active' | 'finished') {
-        super('project-list', 'app', false, `projects--${type}`)
+        super('project-list', 'app', false, `projects-${type}`)
 
         this.renderContent();
         this.configure()
     }
 
+    @AutoBind
+    handlerDragOver(event: DragEvent) {
+        if (event.dataTransfer && event.dataTransfer.types[0] === 'text/plain') {
+            event.preventDefault();
+           const list = this.element.querySelector('ul')! as HTMLUListElement;
+
+           list.classList.add('droppable');
+        }
+    }
+
+    @AutoBind
+    handlerDragLeave(_: DragEvent) {
+        const list = this.element.querySelector('ul') as HTMLUListElement;
+        list.classList.remove('droppable')
+
+    }
+
+    @AutoBind
+    handlerDropZone(event: DragEvent) {
+        const idProject = event.dataTransfer!.getData('text/plain');
+        projectState.moveProject(idProject, this.type === 'active' ? ProjectStatus.Active : ProjectStatus.Finished)
+        this.element.querySelector('ul')!.classList.remove('droppable')
+        this.renderProjects()
+    }
+
     configure() {
+        this.element.addEventListener('dragover', this.handlerDragOver);
+        this.element.addEventListener('dragleave', this.handlerDragLeave);
+        this.element.addEventListener('drop', this.handlerDropZone);
+
         projectState.addListener((projects: Project[]) => {
             const filteredProjects = projects.filter(project => {
                 if (this.type === 'active') {
@@ -132,8 +185,9 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement>{
     }
 }
 
-class ProjectListItem extends Component<HTMLUListElement, HTMLLIElement> {
+class ProjectListItem extends Component<HTMLUListElement, HTMLLIElement> implements Draggable{
     private project: Project;
+    dragged: HTMLLIElement | null = null;
 
     get persons() {
         if (this.project.people === 1) {
@@ -145,14 +199,28 @@ class ProjectListItem extends Component<HTMLUListElement, HTMLLIElement> {
 
     constructor(idHost: string, project: Project) {
         super('single-project', idHost, false, project.id);
-
         this.project = project;
 
         this.configure();
         this.renderContent();
     }
 
-    configure() {}
+    @AutoBind
+    handlerDragStart(event: DragEvent) {
+        this.dragged = event.target as HTMLLIElement;
+        event.dataTransfer!.setData('text/plain', this.project.id)
+        event.dataTransfer!.effectAllowed = 'move';
+    }
+
+    @AutoBind
+    handlerDragEnd(event: DragEvent) {
+        console.log('end' ,event.dataTransfer)
+    }
+
+    configure() {
+        this.element.addEventListener("dragstart", this.handlerDragStart);
+        this.element.addEventListener("dragend", this.handlerDragEnd);
+    }
 
     renderContent() {
         this.element.querySelector('h2')!.textContent = this.project.title;
