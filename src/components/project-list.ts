@@ -1,11 +1,11 @@
-/// <reference path="base-component.ts" />
-/// <reference path="project-item.ts" />
-/// <reference path="../state/project-state.ts" />
-/// <reference path="../model/drag-and-drop.ts" />
-/// <reference path="../decorators/autobind.ts" />
+import { Component } from './base-component.js';
+import { ProjectListItem } from './project-item.js';
+import { Project, ProjectStatus } from '../model/project.js';
+import { AutoBind } from '../decorators/autobind.js';
+import { Droppable } from '../model/drag-and-drop.js';
+import { projectState } from '../state/project-state.js';
 
-namespace App {
-    export class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Droppable {
+export class ProjectList extends Component<HTMLDivElement, HTMLElement> implements Droppable {
         projects: Project[] = [];
 
         constructor(private type: 'active' | 'finished') {
@@ -72,4 +72,3 @@ namespace App {
             }
         }
     }
-}

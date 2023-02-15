@@ -1,9 +1,9 @@
-/// <reference path="base-component.ts" />
-/// <reference path="../utils/validation.ts" />
-/// <reference path="../decorators/autobind.ts" />
+import { Component } from './base-component.js';
+import { projectState } from '../state/project-state.js';
+import { Validatable, validate } from '../utils/validation.js';
+import { AutoBind } from '../decorators/autobind.js';
 
-namespace App {
-    export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement>{
+export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement>{
         inputTitle: HTMLInputElement;
         inputDescription: HTMLInputElement;
         inputPeople: HTMLInputElement;
@@ -44,9 +44,9 @@ namespace App {
             }
 
             if (
-                App.validate(title)
-                && App.validate(description)
-                && App.validate(people)
+                validate(title)
+                && validate(description)
+                && validate(people)
             ) {
                 return [this.inputTitle.value, this.inputDescription.value, +this.inputPeople.value]
             }
@@ -67,4 +67,3 @@ namespace App {
             }
         }
     }
-}

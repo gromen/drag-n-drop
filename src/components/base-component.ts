@@ -1,5 +1,4 @@
-namespace App {
-    export abstract class Component<T extends HTMLElement, U extends HTMLElement> {
+export abstract class Component<T extends HTMLElement, U extends HTMLElement> {
         elementTemplate: HTMLTemplateElement;
         elementHost: T;
         element: U;
@@ -27,4 +26,3 @@ namespace App {
         abstract configure(): void;
         abstract renderContent(): void;
     }
-}
